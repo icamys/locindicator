@@ -25,9 +25,24 @@ For location detection requests to https://api.myip.com/ are made.
 
 1. Bootstrap the indicator.
 
-    This command installs dependencies([jq](https://github.com/stedolan/jq), [indicator-sysmonitor](https://github.com/fossfreedom/indicator-sysmonitor)),
-    adds sensors to indicator-sysmonitor, configures it to run on system start, and starts the indicator.
+    This script requires root privileges to install dependencies ([jq](https://github.com/stedolan/jq), 
+    [indicator-sysmonitor](https://github.com/fossfreedom/indicator-sysmonitor)).
+    Also the script adds sensors to indicator-sysmonitor, configures it to run on system start, and starts the indicator.
 
     ```shell script
     $HOME/Bin/locindicator/bootstrap.sh
     ```
+
+## Uninstallation
+
+The following script will stop and remove the currently running indicator, and remove its configuration file.
+The restart is still possible with the bootstrap script from the installation section.
+
+```
+$HOME/Bin/locindicator/uninstall.sh
+```
+
+## Compatibility
+
+Tested on:
+- ubuntu 18.04
