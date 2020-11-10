@@ -6,6 +6,6 @@ sudo add-apt-repository ppa:fossfreedom/indicator-sysmonitor -y
 sudo apt-get update
 sudo apt-get install -y jq indicator-sysmonitor
 
-python "${INSTALL_PATH}"/configure_indicator.py
+python3 "${INSTALL_PATH}"/configure_indicator.py "${INSTALL_PATH}"
 
 nohup indicator-sysmonitor >/dev/null 2>&1 &

@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from sys import argv
 
 install_path = None

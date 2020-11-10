@@ -4,6 +4,10 @@ Shows your country flag, country ISO code, and IP address of your current locati
 
 For location detection requests to https://api.myip.com/ are made.
 
+## Requirements
+
+* python3
+
 ## Installation
 
 1. Create the directory where the locindicator scripts will be stored 
