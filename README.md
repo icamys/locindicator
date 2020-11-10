@@ -2,7 +2,9 @@
 
 Shows your country flag, country ISO code, and IP address of your current location in the system tray.
 
-For location detection requests to https://api.myip.com/ are made.
+For location detection requests to https://api.myip.com/ are made each 15 seconds.
+
+![example of indicator](./image.png)
 
 ## Requirements
 
@@ -45,4 +47,4 @@ $HOME/Bin/locindicator/uninstall.sh
 ## Compatibility
 
 Tested on:
-- ubuntu 18.04
+- Ubuntu 18.04
