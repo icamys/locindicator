@@ -31,7 +31,7 @@ mgr.update_regex()
 mgr.add('ip', 'Display current location IP address', install_path + "/get-location.sh ip")
 mgr.add('country_code', 'Display current location country ISO code', install_path + "/get-location.sh country_code")
 mgr.add('country_flag', 'Display current location country flag', install_path + "/get-location.sh country_flag")
-mgr.set_custom_text('{country_flag}{country_code}, {ip}')
+mgr.set_custom_text('{country_flag}{country_code}, IP:{ip}')
 mgr.set_interval(15)
 mgr.settings['on_startup'] = True
 mgr.save_settings()
