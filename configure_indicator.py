@@ -28,9 +28,10 @@ exec(open('/usr/lib/indicator-sysmonitor/sensors.py').read())
 
 mgr = SensorManager()
 mgr.update_regex()
-mgr.add('location', 'Display current location IP address and country flag', install_path + "/get-my-location.sh")
-mgr.add('countryflag', 'Display current location country flag', install_path + "/get-my-country-flag.sh")
-mgr.set_custom_text('{countryflag} {location}')
+mgr.add('ip', 'Display current location IP address', install_path + "/get-location.sh ip")
+mgr.add('country_code', 'Display current location country ISO code', install_path + "/get-location.sh country_code")
+mgr.add('country_flag', 'Display current location country flag', install_path + "/get-location.sh country_flag")
+mgr.set_custom_text('{country_flag}{country_code}, {ip}')
 mgr.set_interval(15)
 mgr.settings['on_startup'] = True
 mgr.save_settings()
