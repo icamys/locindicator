@@ -2,7 +2,7 @@
 
 Shows your country flag, country ISO code, and IP address of your current location in the system tray.
 
-For location detection requests to https://api.myip.com/ are made each 15 seconds.
+For location detection requests to https://api.myip.com/ are sent each 15 seconds.
 
 ![example of indicator](./image.png)
 
