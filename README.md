@@ -12,33 +12,42 @@ For location detection requests to https://api.myip.com/ are sent each 15 second
 
 ## Installation
 
-1. Create the directory where the locindicator scripts will be stored 
-(it could be any writable directory):
+1. Create a directory to store locindicator scripts. It could be any writable directory accessible by your user.
 
     ```shell script
     mkdir -p $HOME/Bin
     ```
 
-1. Clone the repo
+2. Clone the repo.
 
-    ```shell script
-    git clone http://github.com/icamys/locindicator $HOME/Bin/locindicator
+    ```shell
+    git clone https://github.com/icamys/locindicator.git $HOME/Bin/locindicator
     ```
 
-1. Bootstrap the indicator.
+3. Install the dependencies.
 
-    This script requires root privileges to install dependencies ([jq](https://github.com/stedolan/jq), 
-    [indicator-sysmonitor](https://github.com/fossfreedom/indicator-sysmonitor)).
-    Also the script adds sensors to indicator-sysmonitor, configures it to run on system start, and starts the indicator.
+   This script requires root privileges to install ([jq](https://github.com/stedolan/jq),
+   [indicator-sysmonitor](https://github.com/fossfreedom/indicator-sysmonitor)).
 
-    ```shell script
+    ```shell
+    sudo $HOME/Bin/locindicator/install.sh
+    ```
+
+4. Bootstrap the indicator. 
+
+    **Attention! Execute this command on behalf of the user, that is running the graphical interface. 
+    Otherwise, the indicator won't appear.** Usually, it means that you should run it without `sudo`.
+
+    The script adds sensors to indicator-sysmonitor, configures it to run on system start, and starts the indicator.
+
+    ```shell
     $HOME/Bin/locindicator/bootstrap.sh
     ```
 
 ## Uninstallation
 
 The following script will stop and remove the currently running indicator, and remove its configuration file.
-The restart is still possible with the bootstrap script from the installation section.
+The restart is still possible with after executing `install.sh` and `bootstrap.sh` scripts
 
 ```
 $HOME/Bin/locindicator/uninstall.sh
