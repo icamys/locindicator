@@ -4,7 +4,7 @@ LOCATION_UPDATE_INTERVAL=15
 CURRENT_LOCATION_FILEPATH="/tmp/.locindicator-current-location"
 CURRENT_TIMESTAMP=$(date +%s)
 
-if test -f "$CURRENT_LOCATION_FILEPATH"; then
+if test -f "$CURRENT_LOCATION_FILEPATH" && [ "$(wc -l $CURRENT_LOCATION_FILEPATH | awk '{ print $1 }' )" == "6" ]; then
   CURRENT_LOCATION_JSON=$(cat ${CURRENT_LOCATION_FILEPATH})
   CURRENT_LOCATION_EXPIRED=$(echo "${CURRENT_LOCATION_JSON}" | jq --arg now "$CURRENT_TIMESTAMP" --arg update_interval "$LOCATION_UPDATE_INTERVAL" '.ts < (($now|tonumber) - ($update_interval|tonumber))')
   if [ "$CURRENT_LOCATION_EXPIRED" = "true" ]; then
