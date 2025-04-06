@@ -27,10 +27,10 @@ fi
 
 if [ "$1" = "country_flag" ]; then
   COUNTRY_CODE_LOWER=$(echo "$CURRENT_LOCATION_JSON" | jq -r .cc | tr '[:upper:]' '[:lower:]')
-  COUNTRY_FLAG_PATH="/tmp/country-flag-${COUNTRY_CODE_LOWER}.png"
+  COUNTRY_FLAG_PATH="/tmp/country-flag-${COUNTRY_CODE_LOWER}.svg"
 
   if [ ! -f "$COUNTRY_FLAG_PATH" ]; then
-    wget -q -o /dev/null -O "${COUNTRY_FLAG_PATH}" "https://raw.githubusercontent.com/hjnilsson/country-flags/master/png100px/${COUNTRY_CODE_LOWER}.png"
+    wget -q -o /dev/null -O "${COUNTRY_FLAG_PATH}" "https://raw.githubusercontent.com/hampusborgos/country-flags/master/svg/${COUNTRY_CODE_LOWER}.svg"
   fi
   echo "USE_ICON:${COUNTRY_FLAG_PATH}"
 fi
