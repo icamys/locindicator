@@ -24,7 +24,8 @@ if not os.path.exists(AUTOSTART_DIR):
 
 shutil.copy(DESKTOP_PATH, AUTOSTART_PATH)
 
-exec(open('/usr/lib/indicator-sysmonitor/sensors.py').read())
+exec(open('/usr/share/indicator-sysmonitor/sysmonitor_common/sensors.py').read())
+
 
 mgr = SensorManager()
 mgr.update_regex()
