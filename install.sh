@@ -1,14 +1,13 @@
 #!/bin/bash
 
-sudo apt-get install -y jq python3-psutil curl git gir1.2-appindicator3-0.1 meson ninja-build
+sudo apt-get install -y jq python3-psutil git gir1.2-appindicator3-0.1 meson
 
 git clone https://github.com/fossfreedom/indicator-sysmonitor.git
-cd indicator-sysmonitor
+cd indicator-sysmonitor || exit 1
 git reset --hard cc5d095 # version the locindicator was tested against
 
-# Building the appindicator according to its docs
-mkdir build
-cd build
+# Building the indicator according to its docs
+mkdir build && cd "$_" || exit 1
 meson setup --prefix=/usr
 sudo meson install
 
