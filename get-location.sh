@@ -1,4 +1,35 @@
 #!/bin/bash
+#
+# get-location.sh - Fetch and cache current location information
+#
+# USAGE:
+#   This script is called by configure_indicator.py to provide location data
+#   for the system tray indicator. It should not be called directly by users.
+#
+#   ./get-location.sh [option]
+#
+# OPTIONS:
+#   ip            - Output current public IP address
+#   country_code  - Output country ISO code (uppercase, e.g., US, GB, CA)
+#   country_flag  - Download country flag SVG and output path in format:
+#                   USE_ICON:/tmp/country-flag-<cc>.svg
+#   (no option)   - Update cache only, no output
+#
+# CACHING:
+#   Location data is fetched from api.myip.com and cached in
+#   /tmp/.locindicator-current-location for 15 seconds to minimize API calls.
+#   The cache file contains JSON with a timestamp field for expiration checking.
+#
+# DEPENDENCIES:
+#   - curl: Make API requests
+#   - jq: Parse JSON responses
+#   - wget: Download country flag images (for country_flag option)
+#
+# CONFIGURATION:
+#   LOCATION_API_URL          - API endpoint (default: https://api.myip.com/)
+#   LOCATION_UPDATE_INTERVAL  - Cache TTL in seconds (default: 15)
+#   CURRENT_LOCATION_FILEPATH - Cache file path (default: /tmp/.locindicator-current-location)
+#
 LOCATION_API_URL="https://api.myip.com/"
 LOCATION_UPDATE_INTERVAL=15
 CURRENT_LOCATION_FILEPATH="/tmp/.locindicator-current-location"
