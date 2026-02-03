@@ -63,6 +63,5 @@ $HOME/Bin/locindicator/uninstall.sh
 ## Compatibility
 
 Tested on:
-- Ubuntu 18.04
-- Ubuntu 20.04
+- Ubuntu 24.04
 - Ubuntu 22.04
