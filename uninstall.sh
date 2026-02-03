@@ -1,5 +1,14 @@
 #!/bin/bash
-sudo apt-get remove -y jq indicator-sysmonitor
 pkill -f /usr/bin/indicator-sysmonitor
-rm "$HOME"/.indicator-sysmonitor.json
-rm "$HOME/.config/autostart/indicator-sysmonitor.desktop"
+
+if [ -f /usr/bin/indicator-sysmonitor ]; then
+  sudo rm /usr/bin/indicator-sysmonitor
+fi
+
+if [ -f "$HOME/.indicator-sysmonitor.json" ]; then
+  rm "$HOME/.indicator-sysmonitor.json"
+fi
+
+if [ -f "$HOME/.config/autostart/indicator-sysmonitor.desktop" ]; then
+  rm "$HOME/.config/autostart/indicator-sysmonitor.desktop"
+fi
