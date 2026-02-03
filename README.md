@@ -10,6 +10,13 @@ For location detection requests to https://api.myip.com/ are sent each 15 second
 
 * python3
 
+Other requirements that will be installed automatically:
+* [jq](https://jqlang.org/) - used to parse JSON responses from location API
+* [indicator-sysmonitor](https://github.com/fossfreedom/indicator-sysmonitor) - used to display the location information in the system tray
+* [meson](https://mesonbuild.com/) - used during installation of indicator-sysmonitor
+* git - used to clone the indicator-sysmonitor repository and checkout the tested version
+* python3-psutil
+
 ## Installation
 
 1. Create a directory to store locindicator scripts. It could be any writable directory accessible by your user.

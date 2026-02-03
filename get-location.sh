@@ -21,9 +21,8 @@
 #   The cache file contains JSON with a timestamp field for expiration checking.
 #
 # DEPENDENCIES:
-#   - curl: Make API requests
 #   - jq: Parse JSON responses
-#   - wget: Download country flag images (for country_flag option)
+#   - wget: Make API requests and download country flag images (for country_flag option)
 #
 # CONFIGURATION:
 #   LOCATION_API_URL          - API endpoint (default: https://api.myip.com/)
@@ -39,10 +38,10 @@ if test -f "$CURRENT_LOCATION_FILEPATH" && [ "$(wc -l $CURRENT_LOCATION_FILEPATH
   CURRENT_LOCATION_JSON=$(cat ${CURRENT_LOCATION_FILEPATH})
   CURRENT_LOCATION_EXPIRED=$(echo "${CURRENT_LOCATION_JSON}" | jq --arg now "$CURRENT_TIMESTAMP" --arg update_interval "$LOCATION_UPDATE_INTERVAL" '.ts < (($now|tonumber) - ($update_interval|tonumber))')
   if [ "$CURRENT_LOCATION_EXPIRED" = "true" ]; then
-    CURRENT_LOCATION_JSON=$(curl -s $LOCATION_API_URL | jq --arg ts "${CURRENT_TIMESTAMP}" '. + {ts: $ts|tonumber}')
+    CURRENT_LOCATION_JSON=$(wget -qO- $LOCATION_API_URL | jq --arg ts "${CURRENT_TIMESTAMP}" '. + {ts: $ts|tonumber}')
   fi
 else
-  CURRENT_LOCATION_JSON=$(curl -s $LOCATION_API_URL | jq --arg ts "${CURRENT_TIMESTAMP}" '. + {ts: $ts|tonumber}')
+  CURRENT_LOCATION_JSON=$(wget -qO- $LOCATION_API_URL | jq --arg ts "${CURRENT_TIMESTAMP}" '. + {ts: $ts|tonumber}')
 fi
 echo "${CURRENT_LOCATION_JSON}" >"${CURRENT_LOCATION_FILEPATH}"
 
