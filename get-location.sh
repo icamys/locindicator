@@ -92,6 +92,10 @@ if [ "$1" = "country_flag" ]; then
 
     if [ ! -f "$COUNTRY_FLAG_PATH" ]; then
       wget -q -o /dev/null -O "${COUNTRY_FLAG_PATH}" "https://raw.githubusercontent.com/hampusborgos/country-flags/master/svg/${COUNTRY_CODE_LOWER}.svg"
+      # Upstream SVGs ship without width/height (only a viewBox), so renderers
+      # fall back to the viewBox units as the intrinsic size, which can be far
+      # larger than a tray icon and makes the flag fill the whole panel height.
+      sed -i '0,/<svg /s//<svg width="60" height="30" /' "${COUNTRY_FLAG_PATH}"
     fi
     echo "USE_ICON:${COUNTRY_FLAG_PATH}"
   fi
