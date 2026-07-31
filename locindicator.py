@@ -9,6 +9,7 @@ import logging
 import os
 import subprocess
 import sys
+from datetime import datetime
 
 import gi  # pylint: disable=import-error
 
@@ -34,12 +35,27 @@ STALE_MARKER = '⚠'
 HISTORY_MENU_LIMIT = 10
 
 
-def _format_timestamp(timestamp):
-    """Render an ISO8601 "date T time" timestamp as "time date"."""
-    date_part, _, time_part = timestamp.partition('T')
-    if not time_part:
-        return date_part
-    return f'{time_part} {date_part}'
+def _format_time_ago(timestamp):
+    """Render an ISO8601 timestamp as a relative "time ago" string."""
+    try:
+        then = datetime.fromisoformat(timestamp)
+    except ValueError:
+        return timestamp
+
+    seconds = (datetime.now() - then).total_seconds()
+    if seconds < 60:
+        return 'just now'
+
+    minutes = int(seconds // 60)
+    if minutes < 60:
+        return f'{minutes}m ago'
+
+    hours = int(minutes // 60)
+    if hours < 24:
+        return f'{hours}h ago'
+
+    days = int(hours // 24)
+    return f'{days}d ago'
 
 
 class LocIndicator:  # pylint: disable=too-few-public-methods
@@ -55,7 +71,6 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         self._history_end_marker = None
         self._history_items = []
         self.menu = self._build_menu()
-        self._refresh_history_menu()
 
         self.ind = appindicator.Indicator.new(
             'locindicator', DEFAULT_ICON, appindicator.IndicatorCategory.SYSTEM_SERVICES)
@@ -102,7 +117,7 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         rows = []
         for index, (timestamp, ip_address, country_code) in enumerate(entries):
             ip_label = f'{country_code}, IP:{ip_address}' if country_code else f'IP:{ip_address}'
-            row = f'{ip_label}   {_format_timestamp(timestamp)}'
+            row = f'{ip_label}   {_format_time_ago(timestamp)}'
             if index == 0:
                 row = f'→ {row}   (current)'
             rows.append(row)
@@ -143,7 +158,8 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         if ip_address and ip_address not in ('N/A', self.last_ip):
             iphistory.append_if_changed(ip_address, country_clean)
             self.last_ip = ip_address
-            self._refresh_history_menu()
+
+        self._refresh_history_menu()
 
         if flag_output.startswith('USE_ICON:'):
             icon_path = flag_output[len('USE_ICON:'):].strip()
