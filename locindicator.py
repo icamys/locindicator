@@ -3,7 +3,7 @@
 
 Polls get-location.sh every 15 seconds, updates the tray icon/label with the
 current flag/country/IP, and logs IP changes to iphistory so the most recent
-ones can be browsed inline in the tray dropdown, under the current IP.
+ones can be browsed inline in the tray dropdown, newest (current) first.
 """
 import logging
 import os
@@ -44,7 +44,6 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
     def __init__(self, install_path):
         self.get_location_script = os.path.join(install_path, 'get-location.sh')
         self.last_ip = iphistory.last_known_ip()
-        self._status_item = None
         self._history_end_marker = None
         self._history_items = []
         self.menu = self._build_menu()
@@ -60,22 +59,16 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         self._tick()
 
     def _build_menu(self):
-        """Build the static dropdown: status line, changelog header, Quit.
+        """Build the static dropdown: changelog header, Quit.
 
-        The status line mirrors the tray label text as a disabled menu entry,
-        so the current IP is still visible from the dropdown even on setups
-        where the panel label fails to render next to the icon (see README's
-        "Known issues" section). Recent IP-history entries are inserted
-        in-place below the "IP changelog" header by _refresh_history_menu,
-        right before _history_end_marker.
+        Recent IP-history entries are inserted in-place below the "IP
+        changelog" header by _refresh_history_menu, right before
+        _history_end_marker. The newest entry is suffixed "(current)" so the
+        current IP is still visible from the dropdown even on setups where
+        the panel label fails to render next to the icon (see README's
+        "Known issues" section).
         """
         menu = Gtk.Menu()
-
-        self._status_item = Gtk.MenuItem(label='Init...')
-        self._status_item.set_sensitive(False)
-        menu.append(self._status_item)
-
-        menu.append(Gtk.SeparatorMenuItem())
 
         header_item = Gtk.MenuItem(label='IP changelog')
         header_item.set_sensitive(False)
@@ -102,7 +95,9 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         for timestamp, ip_address, country_code in entries:
             ip_label = f'{country_code}, IP:{ip_address}' if country_code else f'IP:{ip_address}'
             rows.append(f'{ip_label}   {timestamp}')
-        if not rows:
+        if rows:
+            rows[0] += '   (current)'
+        else:
             rows = ['No IP changes recorded yet']
 
         position = self.menu.get_children().index(self._history_end_marker)
@@ -147,9 +142,7 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
                 self.ind.set_icon_full(icon_path, '')
 
         label = f'{country_code}, IP:{ip_raw}' if country_code else ip_raw
-        label = label.strip()
-        self.ind.set_label(label, '')
-        self._status_item.set_label(label or 'No data yet')
+        self.ind.set_label(label.strip(), '')
 
         return True
 
