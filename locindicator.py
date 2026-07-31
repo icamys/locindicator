@@ -122,7 +122,7 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
             parts.append(_format_time_ago(timestamp))
             row = ', '.join(parts)
             if index == 0:
-                row = f'→ {row} (current)'
+                row = f'{row} (current)'
             rows.append(row)
         if not rows:
             rows = ['No IP changes recorded yet']
