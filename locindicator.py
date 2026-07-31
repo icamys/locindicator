@@ -45,6 +45,7 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         self.last_ip = iphistory.last_known_ip()
         self._history_window = None
         self._history_store = None
+        self._status_item = None
 
         self.ind = appindicator.Indicator.new(
             'locindicator', DEFAULT_ICON, appindicator.IndicatorCategory.SYSTEM_SERVICES)
@@ -56,8 +57,20 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         self._tick()
 
     def _build_menu(self):
-        """Build the static dropdown: IP History, separator, Quit."""
+        """Build the static dropdown: status line, IP History, separator, Quit.
+
+        The status line mirrors the tray label text as a disabled menu entry,
+        so the current IP is still visible from the dropdown even on setups
+        where the panel label fails to render next to the icon (see README's
+        "Known issues" section).
+        """
         menu = Gtk.Menu()
+
+        self._status_item = Gtk.MenuItem(label='Init...')
+        self._status_item.set_sensitive(False)
+        menu.append(self._status_item)
+
+        menu.append(Gtk.SeparatorMenuItem())
 
         history_item = Gtk.MenuItem(label='IP History')
         history_item.connect('activate', self._on_history_activated)
@@ -100,7 +113,9 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
                 self.ind.set_icon_full(icon_path, '')
 
         label = f'{country_code}, IP:{ip_raw}' if country_code else ip_raw
-        self.ind.set_label(label.strip(), '')
+        label = label.strip()
+        self.ind.set_label(label, '')
+        self._status_item.set_label(label or 'No data yet')
 
         return True
 
