@@ -15,22 +15,32 @@ def _read_lines():
         return [line.rstrip('\n') for line in history_file if line.strip()]
 
 
+def _split(line):
+    """Split a log line into (timestamp, ip, country_code), tolerating older
+    two-column entries logged before country_code was recorded."""
+    parts = line.split('\t')
+    timestamp = parts[0]
+    ip_address = parts[1] if len(parts) > 1 else ''
+    country_code = parts[2] if len(parts) > 2 else ''
+    return timestamp, ip_address, country_code
+
+
 def last_known_ip():
     """Return the most recently logged IP, or None if there is no history yet."""
     lines = _read_lines()
     if not lines:
         return None
-    return lines[-1].split('\t', 1)[1]
+    return _split(lines[-1])[1]
 
 
-def append_if_changed(ip_address):
+def append_if_changed(ip_address, country_code):
     """Append a timestamped entry if ip_address differs from the last logged one."""
     lines = _read_lines()
-    if lines and lines[-1].split('\t', 1)[1] == ip_address:
+    if lines and _split(lines[-1])[1] == ip_address:
         return
 
     timestamp = datetime.now().isoformat(timespec='seconds')
-    lines.append(f'{timestamp}\t{ip_address}')
+    lines.append(f'{timestamp}\t{ip_address}\t{country_code}')
     lines = lines[-MAX_ENTRIES:]
 
     os.makedirs(HISTORY_DIR, exist_ok=True)
@@ -39,7 +49,7 @@ def append_if_changed(ip_address):
 
 
 def read_history():
-    """Return (timestamp, ip) tuples for every logged entry, newest first."""
-    entries = [tuple(line.split('\t', 1)) for line in _read_lines()]
+    """Return (timestamp, ip, country_code) tuples, newest first."""
+    entries = [_split(line) for line in _read_lines()]
     entries.reverse()
     return entries

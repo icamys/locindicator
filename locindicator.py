@@ -60,14 +60,14 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         self._tick()
 
     def _build_menu(self):
-        """Build the static dropdown: status line, history section, Quit.
+        """Build the static dropdown: status line, changelog header, Quit.
 
         The status line mirrors the tray label text as a disabled menu entry,
         so the current IP is still visible from the dropdown even on setups
         where the panel label fails to render next to the icon (see README's
         "Known issues" section). Recent IP-history entries are inserted
-        in-place below it by _refresh_history_menu, right before
-        _history_end_marker.
+        in-place below the "IP changelog" header by _refresh_history_menu,
+        right before _history_end_marker.
         """
         menu = Gtk.Menu()
 
@@ -76,6 +76,10 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         menu.append(self._status_item)
 
         menu.append(Gtk.SeparatorMenuItem())
+
+        header_item = Gtk.MenuItem(label='IP changelog')
+        header_item.set_sensitive(False)
+        menu.append(header_item)
 
         self._history_end_marker = Gtk.SeparatorMenuItem()
         menu.append(self._history_end_marker)
@@ -88,13 +92,16 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         return menu
 
     def _refresh_history_menu(self):
-        """Rebuild the inline history rows below the current-IP status line."""
+        """Rebuild the inline history rows below the "IP changelog" header."""
         for item in self._history_items:
             self.menu.remove(item)
         self._history_items = []
 
         entries = iphistory.read_history()[:HISTORY_MENU_LIMIT]
-        rows = [f'{timestamp}   {ip_address}' for timestamp, ip_address in entries]
+        rows = []
+        for timestamp, ip_address, country_code in entries:
+            ip_label = f'{country_code}, IP:{ip_address}' if country_code else f'IP:{ip_address}'
+            rows.append(f'{ip_label}   {timestamp}')
         if not rows:
             rows = ['No IP changes recorded yet']
 
@@ -125,8 +132,12 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         flag_output = self._run_get_location('country_flag')
 
         ip_address = ip_raw.replace(STALE_MARKER, '').strip()
+        country_clean = country_code.replace(STALE_MARKER, '').strip()
+        if country_clean == 'N/A':
+            country_clean = ''
+
         if ip_address and ip_address not in ('N/A', self.last_ip):
-            iphistory.append_if_changed(ip_address)
+            iphistory.append_if_changed(ip_address, country_clean)
             self.last_ip = ip_address
             self._refresh_history_menu()
 
