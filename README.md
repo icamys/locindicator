@@ -1,6 +1,6 @@
 # Location indicator
 
-Shows your country flag, country ISO code, and IP address of your current location in the system tray.
+Shows your country flag, country ISO code, and IP address of your current location in the system tray. Clicking the tray icon also gives you an **IP History** entry showing every IP change ever noticed (timestamp + IP, newest first, last 100 kept), including ones noticed right after a restart.
 
 For location detection requests to https://api.myip.com/ are sent each 15 seconds.
 
@@ -12,10 +12,8 @@ For location detection requests to https://api.myip.com/ are sent each 15 second
 
 Other requirements that will be installed automatically:
 * [jq](https://jqlang.org/) - used to parse JSON responses from location API
-* [indicator-sysmonitor](https://github.com/fossfreedom/indicator-sysmonitor) - used to display the location information in the system tray
-* [meson](https://mesonbuild.com/) - used during installation of indicator-sysmonitor
-* git - used to clone the indicator-sysmonitor repository and checkout the tested version
-* python3-psutil
+* wget - used to fetch the location API and download country flag SVGs
+* python3-gi, gir1.2-appindicator3-0.1 - GTK/AppIndicator bindings used to display the tray icon and its dropdown
 
 ## Installation
 
@@ -33,8 +31,7 @@ Other requirements that will be installed automatically:
 
 3. Install the dependencies.
 
-   This script requires root privileges to install ([jq](https://github.com/stedolan/jq),
-   [indicator-sysmonitor](https://github.com/fossfreedom/indicator-sysmonitor)).
+   This script requires root privileges to install ([jq](https://github.com/stedolan/jq) and the GTK/AppIndicator bindings).
 
     ```shell
     sudo $HOME/Bin/locindicator/install.sh
@@ -45,7 +42,7 @@ Other requirements that will be installed automatically:
     **Attention! Execute this command on behalf of the user, that is running the graphical interface. 
     Otherwise, the indicator won't appear.** Usually, it means that you should run it without `sudo`.
 
-    The script adds sensors to indicator-sysmonitor, configures it to run on system start, and starts the indicator.
+    The script registers the indicator to run on system start and starts it.
 
     ```shell
     $HOME/Bin/locindicator/bootstrap.sh
@@ -73,7 +70,7 @@ AppIndicators GNOME Shell extension**
 ([ubuntu/gnome-shell-extension-appindicator](https://github.com/ubuntu/gnome-shell-extension-appindicator),
 see [Launchpad bug #2059818](https://bugs.launchpad.net/ubuntu/+source/gnome-shell-extension-appindicator/+bug/2059818)).
 Investigation via D-Bus (`busctl get-property ... XAyatanaLabel`) confirmed
-`indicator-sysmonitor` sets the label correctly on the StatusNotifierItem. The
+the indicator sets the label correctly on the StatusNotifierItem. The
 extension, however, only refreshes its cached panel label when it receives a
 custom `NewLabel`/`XAyatanaNewLabel` D-Bus signal — it does not read
 `org.freedesktop.DBus.Properties.PropertiesChanged` and does not poll the
