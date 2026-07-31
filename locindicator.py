@@ -34,6 +34,14 @@ STALE_MARKER = '⚠'
 HISTORY_MENU_LIMIT = 10
 
 
+def _format_timestamp(timestamp):
+    """Render an ISO8601 "date T time" timestamp as "time date"."""
+    date_part, _, time_part = timestamp.partition('T')
+    if not time_part:
+        return date_part
+    return f'{time_part} {date_part}'
+
+
 class LocIndicator:  # pylint: disable=too-few-public-methods
     """Owns the tray icon and its dropdown menu, including inline IP history.
 
@@ -92,12 +100,13 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
 
         entries = iphistory.read_history()[:HISTORY_MENU_LIMIT]
         rows = []
-        for timestamp, ip_address, country_code in entries:
+        for index, (timestamp, ip_address, country_code) in enumerate(entries):
             ip_label = f'{country_code}, IP:{ip_address}' if country_code else f'IP:{ip_address}'
-            rows.append(f'{ip_label}   {timestamp}')
-        if rows:
-            rows[0] += '   (current)'
-        else:
+            row = f'{ip_label}   {_format_timestamp(timestamp)}'
+            if index == 0:
+                row = f'→ {row}   (current)'
+            rows.append(row)
+        if not rows:
             rows = ['No IP changes recorded yet']
 
         position = self.menu.get_children().index(self._history_end_marker)
