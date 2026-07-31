@@ -1,6 +1,6 @@
 # Location indicator
 
-Shows your country flag, country ISO code, and IP address of your current location in the system tray. Clicking the tray icon also gives you an **IP History** entry showing every IP change ever noticed (timestamp + IP, newest first, last 100 kept), including ones noticed right after a restart.
+Shows your country flag, country ISO code, and IP address of your current location in the system tray. Clicking the tray icon shows the current IP plus the most recent IP changes ever noticed (timestamp + IP, newest first), including ones noticed right after a restart.
 
 For location detection requests to https://api.myip.com/ are sent each 15 seconds.
 

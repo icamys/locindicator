@@ -2,8 +2,8 @@
 """Tray indicator process for locindicator.
 
 Polls get-location.sh every 15 seconds, updates the tray icon/label with the
-current flag/country/IP, and logs IP changes to iphistory so they can be
-browsed from the tray dropdown's "IP History" entry.
+current flag/country/IP, and logs IP changes to iphistory so the most recent
+ones can be browsed inline in the tray dropdown, under the current IP.
 """
 import logging
 import os
@@ -31,10 +31,11 @@ logging.basicConfig(level=logging.INFO)
 UPDATE_INTERVAL_SECONDS = 15
 DEFAULT_ICON = 'network-wired-symbolic'
 STALE_MARKER = '⚠'
+HISTORY_MENU_LIMIT = 10
 
 
 class LocIndicator:  # pylint: disable=too-few-public-methods
-    """Owns the tray icon, its dropdown menu, and the IP-history window.
+    """Owns the tray icon and its dropdown menu, including inline IP history.
 
     Its behavior is driven entirely by the GLib tick and GTK signal callbacks
     below, so it has no public methods beyond construction.
@@ -43,26 +44,30 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
     def __init__(self, install_path):
         self.get_location_script = os.path.join(install_path, 'get-location.sh')
         self.last_ip = iphistory.last_known_ip()
-        self._history_window = None
-        self._history_store = None
         self._status_item = None
+        self._history_end_marker = None
+        self._history_items = []
+        self.menu = self._build_menu()
+        self._refresh_history_menu()
 
         self.ind = appindicator.Indicator.new(
             'locindicator', DEFAULT_ICON, appindicator.IndicatorCategory.SYSTEM_SERVICES)
         self.ind.set_status(appindicator.IndicatorStatus.ACTIVE)
         self.ind.set_label('Init...', '')
-        self.ind.set_menu(self._build_menu())
+        self.ind.set_menu(self.menu)
 
         GLib.timeout_add_seconds(UPDATE_INTERVAL_SECONDS, self._tick)
         self._tick()
 
     def _build_menu(self):
-        """Build the static dropdown: status line, IP History, separator, Quit.
+        """Build the static dropdown: status line, history section, Quit.
 
         The status line mirrors the tray label text as a disabled menu entry,
         so the current IP is still visible from the dropdown even on setups
         where the panel label fails to render next to the icon (see README's
-        "Known issues" section).
+        "Known issues" section). Recent IP-history entries are inserted
+        in-place below it by _refresh_history_menu, right before
+        _history_end_marker.
         """
         menu = Gtk.Menu()
 
@@ -72,11 +77,8 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
 
         menu.append(Gtk.SeparatorMenuItem())
 
-        history_item = Gtk.MenuItem(label='IP History')
-        history_item.connect('activate', self._on_history_activated)
-        menu.append(history_item)
-
-        menu.append(Gtk.SeparatorMenuItem())
+        self._history_end_marker = Gtk.SeparatorMenuItem()
+        menu.append(self._history_end_marker)
 
         quit_item = Gtk.MenuItem(label='Quit')
         quit_item.connect('activate', self._on_quit)
@@ -84,6 +86,26 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
 
         menu.show_all()
         return menu
+
+    def _refresh_history_menu(self):
+        """Rebuild the inline history rows below the current-IP status line."""
+        for item in self._history_items:
+            self.menu.remove(item)
+        self._history_items = []
+
+        entries = iphistory.read_history()[:HISTORY_MENU_LIMIT]
+        rows = [f'{timestamp}   {ip_address}' for timestamp, ip_address in entries]
+        if not rows:
+            rows = ['No IP changes recorded yet']
+
+        position = self.menu.get_children().index(self._history_end_marker)
+        for row in rows:
+            item = Gtk.MenuItem(label=row)
+            item.set_sensitive(False)
+            item.show()
+            self.menu.insert(item, position)
+            position += 1
+            self._history_items.append(item)
 
     def _run_get_location(self, arg):
         """Invoke get-location.sh with the given argument and return its stdout."""
@@ -106,6 +128,7 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         if ip_address and ip_address not in ('N/A', self.last_ip):
             iphistory.append_if_changed(ip_address)
             self.last_ip = ip_address
+            self._refresh_history_menu()
 
         if flag_output.startswith('USE_ICON:'):
             icon_path = flag_output[len('USE_ICON:'):].strip()
@@ -118,45 +141,6 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         self._status_item.set_label(label or 'No data yet')
 
         return True
-
-    def _on_history_activated(self, _widget):
-        """Show the IP-history window, creating it on first use."""
-        if self._history_window is not None:
-            self._refresh_history_store()
-            self._history_window.present()
-            return
-
-        window = Gtk.Window(title='IP History')
-        window.set_default_size(320, 400)
-        window.connect('delete-event', self._on_history_closed)
-
-        store = Gtk.ListStore(str, str)
-        tree_view = Gtk.TreeView(model=store)
-        for index, title in enumerate(['Since', 'IP']):
-            tree_view.append_column(
-                Gtk.TreeViewColumn(title, Gtk.CellRendererText(), text=index))
-
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.add(tree_view)
-        window.add(scrolled)
-
-        self._history_window = window
-        self._history_store = store
-        self._refresh_history_store()
-        window.show_all()
-
-    def _refresh_history_store(self):
-        """Reload the history list store from the on-disk log."""
-        self._history_store.clear()
-        for timestamp, ip_address in iphistory.read_history():
-            self._history_store.append([timestamp, ip_address])
-
-    def _on_history_closed(self, window, _event):
-        """Drop the history window singleton so it's rebuilt fresh next time."""
-        window.destroy()
-        self._history_window = None
-        self._history_store = None
-        return False
 
     def _on_quit(self, _widget):
         """Exit the indicator."""
