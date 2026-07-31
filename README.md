@@ -60,6 +60,34 @@ The restart is still possible with after executing `install.sh` and `bootstrap.s
 $HOME/Bin/locindicator/uninstall.sh
 ```
 
+## Known issues
+
+### IP / country code text missing from the tray (flag icon only)
+
+On some systems only the flag icon shows in the tray, with the `IP:<address>` /
+country code text label never appearing next to it, even though the indicator
+is otherwise working correctly.
+
+This is not a bug in `locindicator` — it's a rendering bug in the **Ubuntu
+AppIndicators GNOME Shell extension**
+([ubuntu/gnome-shell-extension-appindicator](https://github.com/ubuntu/gnome-shell-extension-appindicator),
+see [Launchpad bug #2059818](https://bugs.launchpad.net/ubuntu/+source/gnome-shell-extension-appindicator/+bug/2059818)).
+Investigation via D-Bus (`busctl get-property ... XAyatanaLabel`) confirmed
+`indicator-sysmonitor` sets the label correctly on the StatusNotifierItem. The
+extension, however, only refreshes its cached panel label when it receives a
+custom `NewLabel`/`XAyatanaNewLabel` D-Bus signal — it does not read
+`org.freedesktop.DBus.Properties.PropertiesChanged` and does not poll the
+property. When the version of `libayatana-appindicator` backing
+`set_label()` doesn't emit that signal (or emits it under a name this
+extension version doesn't expect), the shell never learns the label changed.
+The icon, which has its own `NewIcon`-style signal path, still updates fine —
+so only the flag renders, never the text next to it.
+
+There is no known fix or workaround within this repo; the label content is
+already correct on the D-Bus side. If you hit this, either:
+- Live with icon-only display (the flag still reflects your current country), or
+- Check for an updated `gnome-shell-extension-appindicator` package (`apt changelog gnome-shell-extension-appindicator`) that addresses the signal mismatch.
+
 ## Compatibility
 
 Tested on:
