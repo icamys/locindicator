@@ -82,7 +82,7 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         self._tick()
 
     def _build_menu(self):
-        """Build the static dropdown: changelog header, Quit.
+        """Build the static dropdown: Check Now, changelog header, Quit.
 
         Recent IP-history entries are inserted in-place below the "IP
         changelog" header by _refresh_history_menu, right before
@@ -92,6 +92,11 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         "Known issues" section).
         """
         menu = Gtk.Menu()
+
+        check_now_item = Gtk.MenuItem(label='Check Now')
+        check_now_item.connect('activate', self._on_check_now)
+        menu.append(check_now_item)
+        menu.append(Gtk.SeparatorMenuItem())
 
         header_item = Gtk.MenuItem(label='IP changelog')
         header_item.set_sensitive(False)
@@ -173,6 +178,10 @@ class LocIndicator:  # pylint: disable=too-few-public-methods
         self.ind.set_label(label.strip(), '')
 
         return True
+
+    def _on_check_now(self, _widget):
+        """Manually trigger an immediate IP check, outside the normal tick schedule."""
+        self._tick()
 
     def _on_quit(self, _widget):
         """Exit the indicator."""
